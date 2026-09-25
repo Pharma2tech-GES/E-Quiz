@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Level E-Quiz Competition - Student Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        .unselectable {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        @keyframes pulse-red {
+            0%, 100% { color: #ef4444; }
+            50% { color: #991b1b; }
+        }
+        .timer-warning {
+            animation: pulse-red 1s infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col unselectable" id="appBody">
+
+    <!-- HEADER -->
+    <header class="bg-gradient-to-r from-blue-950 via-indigo-900 to-slate-900 text-white shadow-xl sticky top-0 z-30 border-b border-indigo-800/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+            <div class="flex items-center space-x-4 text-left">
+                <div class="relative">
+                    <img id="headerLogo" src="logo.ico" alt="College Logo" 
+                         onerror="this.onerror=null; this.src='https://placehold.co/100x100/1e3a8a/ffffff?text=GES+LOGO';" 
+                         class="h-14 w-14 object-contain rounded-full bg-white p-1 border-2 border-indigo-300 shadow">
+                </div>
+                <div>
+                    <h1 id="headerCollegeName" class="text-base sm:text-lg font-extrabold tracking-wide text-blue-100 uppercase">G.E.S. COLLEGE OF PHARMACY (D.PHARM)</h1>
+                    <p id="headerCollegeSubtitle" class="text-xs text-indigo-200 font-medium">Limb, Satara - Approved by PCI & DTE Maharashtra</p>
+                    <div id="headerQuizTitle" class="text-sm sm:text-base font-black text-amber-400 mt-0.5 tracking-wider uppercase drop-shadow">STATE LEVEL E-QUIZ COMPETITION</div>
+                </div>
+            </div>
+
+            <div class="hidden sm:flex items-center space-x-2 bg-emerald-950/60 text-emerald-300 px-3 py-1.5 rounded-xl border border-emerald-500/40 text-xs font-bold">
+                <span class="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                <span>Student Exam Portal</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow flex flex-col max-w-7xl w-full mx-auto p-3 sm:p-6">
+
+        <!-- STATE 1: LINK STATUS OFF / EXAM WINDOW CLOSED CARD -->
+        <div id="cardLinkClosed" class="hidden bg-white rounded-2xl shadow-xl p-8 border border-red-200 text-center max-w-xl mx-auto my-auto w-full">
+            <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl border-2 border-red-300">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2 class="text-2xl font-black text-slate-900 mb-2">Exam Window Closed</h2>
+            <p id="closedReasonText" class="text-slate-600 text-sm mb-6">The e-quiz competition link is currently turned <span class="text-red-600 font-bold">OFF</span> or the examination schedule window has concluded.</p>
+            <div class="bg-red-50 text-red-800 text-xs p-3 rounded-xl border border-red-200 font-medium flex items-center justify-center gap-2">
+                <i class="fa-solid fa-circle-info"></i> Please stay tuned or contact the exam committee for scheduling details.
+            </div>
+        </div>
+
+        <!-- STATE 2: UPCOMING EXAM COUNTDOWN CARD -->
+        <div id="cardUpcoming" class="hidden bg-white rounded-2xl shadow-xl p-8 border border-indigo-100 text-center max-w-2xl mx-auto my-auto w-full">
+            <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl border-2 border-amber-300">
+                <i class="fa-solid fa-hourglass-start animate-bounce"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Exam Scheduled Soon</h2>
+            <p class="text-slate-500 text-xs mb-6">Please stay on this page. The exam window will unlock automatically when the timer reaches zero.</p>
+            
+            <div class="grid grid-cols-4 gap-2 sm:gap-4 max-w-md mx-auto mb-6">
+                <div class="bg-slate-900 text-white rounded-xl p-3 shadow-md">
+                    <div id="cntDays" class="text-2xl sm:text-3xl font-black text-amber-400">00</div>
+                    <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Days</div>
+                </div>
+                <div class="bg-slate-900 text-white rounded-xl p-3 shadow-md">
+                    <div id="cntHours" class="text-2xl sm:text-3xl font-black text-amber-400">00</div>
+                    <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Hours</div>
+                </div>
+                <div class="bg-slate-900 text-white rounded-xl p-3 shadow-md">
+                    <div id="cntMins" class="text-2xl sm:text-3xl font-black text-amber-400">00</div>
+                    <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Mins</div>
+                </div>
+                <div class="bg-slate-900 text-white rounded-xl p-3 shadow-md">
+                    <div id="cntSecs" class="text-2xl sm:text-3xl font-black text-amber-400">00</div>
+                    <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Secs</div>
+                </div>
+            </div>
+
+            <div class="text-xs font-semibold text-indigo-900 bg-indigo-50 p-3 rounded-xl border border-indigo-200">
+                <i class="fa-regular fa-calendar-check mr-1"></i> Start Schedule: <span id="scheduleStartText" class="font-bold">--</span>
+            </div>
+        </div>
+
+        <!-- STATE 3: EXAM READY INSTRUCTIONS & START CARD -->
+        <div id="cardStartTest" class="hidden bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-200 text-center max-w-2xl mx-auto my-auto w-full">
+            <div class="w-16 h-16 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl border border-blue-200">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Proctored E-Quiz Instructions</h2>
+            <p class="text-slate-600 text-xs mb-4">Read the competition guidelines carefully before launching your exam window.</p>
+            
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 text-left text-xs text-amber-900 rounded-lg mb-6 space-y-2">
+                <p class="font-bold text-amber-950 flex items-center gap-1.5 text-sm">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-600"></i> Anti-Cheating Safeguards Active:
+                </p>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><strong>Fullscreen Enforced:</strong> The quiz runs strictly in fullscreen mode.</li>
+                    <li><strong>No Tab / Window Switching:</strong> Switching tabs or opening external apps triggers a recorded violation.</li>
+                    <li><strong>Keyboard & Screenshot Restrictions:</strong> PrintScreen, F12, Right-click are strictly blocked.</li>
+                    <li><strong>3-Violation Lockout Penalty:</strong> 3 recorded violations automatically <strong>PAUSE</strong> your test for 60 seconds.</li>
+                </ul>
+            </div>
+
+            <button onclick="startExam()" class="w-full sm:w-auto px-8 py-3.5 bg-green-600 hover:bg-green-700 text-white font-black text-base rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 mx-auto">
+                <i class="fa-solid fa-play"></i> Enter Fullscreen & Begin Quiz
+            </button>
+        </div>
+
+        <!-- STATE 4: LIVE EXAM INTERFACE CONTAINER -->
+        <div id="activeTestContainer" class="hidden flex-grow flex flex-col gap-3">
+            <div class="bg-white rounded-xl shadow-md p-3 border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-sm">
+                <div class="flex items-center gap-4">
+                    <span class="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 text-xs">
+                        <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span> Live Exam Session
+                    </span>
+                    <div class="flex items-center gap-2 font-bold text-slate-700 text-xs sm:text-sm">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                        Violations: <span id="violationBadge" class="bg-slate-100 text-slate-800 font-extrabold px-2.5 py-0.5 rounded border border-slate-300">0 / 3</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 font-mono font-black text-lg bg-slate-900 text-amber-400 px-4 py-1.5 rounded-lg shadow border border-slate-700">
+                    <i class="fa-regular fa-clock text-amber-400"></i>
+                    <span id="timerDisplay">00:00</span>
+                </div>
+
+                <button onclick="requestFullscreenManually()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-lg border border-slate-300 flex items-center gap-1">
+                    <i class="fa-solid fa-expand"></i> Re-enable Fullscreen
+                </button>
+            </div>
+
+            <div class="relative flex-grow bg-white rounded-xl shadow-md border border-slate-300 overflow-hidden min-h-[620px]">
+                <iframe id="googleFormIframe" src="about:blank" class="w-full h-full border-0 absolute inset-0"></iframe>
+                
+                <div id="iframeCoverOverlay" class="hidden absolute inset-0 bg-slate-900/95 backdrop-blur-md z-20 flex flex-col items-center justify-center text-white p-6 text-center">
+                    <div id="coverOverlayContent"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-300 text-xs py-4 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <div>
+                <p class="font-bold text-white flex items-center justify-center sm:justify-start gap-1.5">
+                    <i class="fa-solid fa-microchip text-indigo-400"></i> Powered by <span class="text-amber-400">Pharma2Tech Systems Pvt Ltd</span>
+                </p>
+                <p class="text-[11px] text-slate-400 italic font-medium">"Where Pharmacy Meets Technology"</p>
+            </div>
+            <div class="flex items-center gap-4 text-[11px] font-medium">
+                <a href="mailto:support@pharma2tech.in" class="hover:text-amber-400 transition flex items-center gap-1.5 text-indigo-300">
+                    <i class="fa-regular fa-envelope"></i> support@pharma2tech.in
+                </a>
+                <span class="text-slate-600">|</span>
+                <span class="text-slate-400">© 2026 All Rights Reserved</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- PROCTORING WARNING MODAL -->
+    <div id="warningModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border-2 border-red-500 text-center">
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl animate-bounce border border-red-200">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-1">PROCTORING WARNING!</h3>
+            <p id="warningModalReason" class="text-sm font-bold text-red-600 mb-3">Tab switch or focus loss detected!</p>
+            <p class="text-xs text-slate-600 mb-6 bg-slate-100 p-3 rounded-xl border border-slate-200">
+                You are taking a proctored exam. Exiting fullscreen, switching tabs, or using restricted shortcuts is forbidden.
+            </p>
+            <div class="bg-red-50 text-red-900 font-bold text-sm py-2 px-4 rounded-xl mb-6 border border-red-200">
+                Violation Count: <span id="modalViolationCount" class="text-base text-red-700">1</span> / 3
+            </div>
+            <button onclick="dismissWarningAndResume()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition">
+                I Understand & Resume Exam
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* 
+           ========================================================================
+           ALL CONFIGURATIONS IN ONE PLACE (सर्व सेटिंग्ज एकाच जागी)
+           ========================================================================
+           FORMAT GUIDELINE FOR TIME:
+           Format: "YYYY-MM-DD hh:mm AM/PM" (उदा. "2026-09-25 10:00 AM")
+           ========================================================================
+        */
+        const CONFIG = {
+            // १. कॉलेज आणि परीक्षा नाव
+            collegeName: "G.E.S. COLLEGE OF PHARMACY (D.PHARM)",
+            collegeSubtitle: "Limb, Satara - Approved by PCI & DTE Maharashtra",
+            quizTitle: "STATE LEVEL E-QUIZ COMPETITION",
+            logoUrl: "logo.ico",
+
+            // २. अपडेट केलेली तुमची Google Form Link
+            formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSd4VzPn7ayt6-973D4C5ibLXIwtHMRVMCao-lgw5kOtJsYQ0w/viewform?embedded=true",
+
+            // ३. परीक्षा कालावधी (मिनिटांमध्ये)
+            durationMinutes: 30,
+
+            // ४. परीक्षा ऑन/ऑफ बटण (true = परीक्षा चालू ठेवा, false = परीक्षा बंद ठेवा)
+            linkStatus: true,
+
+            // ५. परीक्षा सुरू होण्याची वेळ (IST - 12 Hour Clock Format)
+            startTime: "2026-09-24 09:00 PM", 
+
+            // ६. परीक्षा संपण्याची वेळ (IST - 12 Hour Clock Format)
+            endTime: "2026-09-24 09:30 PM"
+        };
+
+        /* ======================================================================== */
+
+        let testRunning = false;
+        let testPaused = false;
+        let testFinished = false;
+        let violationCount = 0;
+        let timeRemainingSeconds = 0;
+        let timerInterval = null;
+        let pauseTimerInterval = null;
+        let pauseTimeRemaining = 60;
+        let isIframeHovered = false;
+
+        // 12-Hour IST String ला timestamp मध्ये Convert करणारा Fast Parser
+        function parseIST12HourTime(timeStr) {
+            try {
+                const parts = timeStr.trim().split(' ');
+                const dateParts = parts[0].split('-');
+                const timeParts = parts[1].split(':');
+                const ampm = parts[2].toUpperCase();
+
+                let year = parseInt(dateParts[0], 10);
+                let month = parseInt(dateParts[1], 10) - 1;
+                let day = parseInt(dateParts[2], 10);
+
+                let hours = parseInt(timeParts[0], 10);
+                let minutes = parseInt(timeParts[1], 10);
+
+                if (ampm === 'PM' && hours < 12) hours += 12;
+                if (ampm === 'AM' && hours === 12) hours = 0;
+
+                return new Date(year, month, day, hours, minutes, 0).getTime();
+            } catch (e) {
+                console.error("Invalid Date Format in CONFIG!", e);
+                return Date.now();
+            }
+        }
+
+        window.addEventListener('load', () => {
+            updateUIBranding();
+            setupAntiCheatingListeners();
+            evaluateStudentPortalState();
+            setInterval(evaluateStudentPortalState, 1000);
+        });
+
+        function updateUIBranding() {
+            document.getElementById('headerCollegeName').innerText = CONFIG.collegeName;
+            document.getElementById('headerCollegeSubtitle').innerText = CONFIG.collegeSubtitle;
+            document.getElementById('headerQuizTitle').innerText = CONFIG.quizTitle;
+            
+            const logoEl = document.getElementById('headerLogo');
+            if (logoEl) {
+                logoEl.src = CONFIG.logoUrl;
+            }
+        }
+
+        function evaluateStudentPortalState() {
+            if (testRunning) return;
+
+            const cardClosed = document.getElementById('cardLinkClosed');
+            const cardUpcoming = document.getElementById('cardUpcoming');
+            const cardStart = document.getElementById('cardStartTest');
+
+            const nowTime = Date.now();
+            const startTime = parseIST12HourTime(CONFIG.startTime);
+            const endTime = parseIST12HourTime(CONFIG.endTime);
+
+            // Condition 1: Master Link Status OFF or Exam Window Expired
+            if (!CONFIG.linkStatus || nowTime >= endTime) {
+                cardClosed.classList.remove('hidden');
+                cardUpcoming.classList.add('hidden');
+                cardStart.classList.add('hidden');
+
+                const closedText = document.getElementById('closedReasonText');
+                if (!CONFIG.linkStatus) {
+                    closedText.innerHTML = 'The e-quiz competition link is currently turned <span class="text-red-600 font-bold">OFF</span>.';
+                } else {
+                    closedText.innerText = 'The examination schedule window has concluded.';
+                }
+                return;
+            }
+
+            // Condition 2: Exam Scheduled in Future
+            if (nowTime < startTime) {
+                cardClosed.classList.add('hidden');
+                cardUpcoming.classList.remove('hidden');
+                cardStart.classList.add('hidden');
+
+                const diff = startTime - nowTime;
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('cntDays').innerText = String(d).padStart(2, '0');
+                document.getElementById('cntHours').innerText = String(h).padStart(2, '0');
+                document.getElementById('cntMins').innerText = String(m).padStart(2, '0');
+                document.getElementById('cntSecs').innerText = String(s).padStart(2, '0');
+                document.getElementById('scheduleStartText').innerText = CONFIG.startTime + " (IST)";
+                return;
+            }
+
+            // Condition 3: Active Exam Time Window
+            cardClosed.classList.add('hidden');
+            cardUpcoming.classList.add('hidden');
+            cardStart.classList.remove('hidden');
+        }
+
+        function startExam() {
+            testRunning = true;
+            testFinished = false;
+            testPaused = false;
+            violationCount = 0;
+            updateViolationBadge();
+
+            requestFullscreenManually();
+
+            document.getElementById('cardStartTest').classList.add('hidden');
+            document.getElementById('activeTestContainer').classList.remove('hidden');
+
+            const formIframe = document.getElementById('googleFormIframe');
+            formIframe.src = CONFIG.formUrl;
+
+            timeRemainingSeconds = (CONFIG.durationMinutes || 15) * 60;
+            startCountdownTimer();
+        }
+
+        function requestFullscreenManually() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(() => {});
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            }
+        }
+
+        function startCountdownTimer() {
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                if (!testPaused && testRunning) {
+                    timeRemainingSeconds--;
+                    updateTimerDisplay();
+
+                    if (timeRemainingSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        finishExam("Exam Time Duration Expired");
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemainingSeconds / 60);
+            const seconds = timeRemainingSeconds % 60;
+            const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            const timerEl = document.getElementById('timerDisplay');
+            timerEl.innerText = display;
+
+            if (timeRemainingSeconds <= 180) {
+                timerEl.classList.add('timer-warning');
+            } else {
+                timerEl.classList.remove('timer-warning');
+            }
+        }
+
+        function setupAntiCheatingListeners() {
+            const formIframe = document.getElementById('googleFormIframe');
+
+            formIframe.addEventListener('mouseenter', () => { isIframeHovered = true; });
+            formIframe.addEventListener('mouseleave', () => { isIframeHovered = false; });
+
+            document.addEventListener('visibilitychange', () => {
+                if (testRunning && !testFinished && !testPaused && document.hidden) {
+                    triggerViolation("Tab or app switch detected!");
+                }
+            });
+
+            window.addEventListener('blur', () => {
+                if (testRunning && !testFinished && !testPaused) {
+                    setTimeout(() => {
+                        const activeEl = document.activeElement;
+                        const isIframeFocused = (activeEl === formIframe) || (activeEl && activeEl.tagName === 'IFRAME');
+                        if (isIframeFocused || isIframeHovered) return;
+
+                        if (document.hidden || (!document.hasFocus() && !isIframeFocused)) {
+                            triggerViolation("Focus lost (Window switch)");
+                        }
+                    }, 150);
+                }
+            });
+
+            document.addEventListener('fullscreenchange', handleFullscreenExit);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenExit);
+
+            function handleFullscreenExit() {
+                if (testRunning && !testFinished && !testPaused) {
+                    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                        triggerViolation("Exited Fullscreen Mode!");
+                    }
+                }
+            }
+
+            window.addEventListener('keydown', (e) => {
+                if (!testRunning || testFinished) return;
+
+                if (e.key === 'PrintScreen' || e.keyCode === 44) {
+                    e.preventDefault();
+                    triggerViolation("PrintScreen / Screenshot attempt!");
+                    return false;
+                }
+
+                if (e.key === 'F12' || e.keyCode === 123) {
+                    e.preventDefault();
+                    triggerViolation("Developer Tools F12 blocked!");
+                    return false;
+                }
+
+                if (e.ctrlKey && (e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j') || e.key === 'u' || e.key === 'U')) {
+                    e.preventDefault();
+                    triggerViolation(`Restricted shortcut (Ctrl+${e.key})`);
+                    return false;
+                }
+            });
+
+            document.addEventListener('contextmenu', (e) => {
+                if (testRunning && !testFinished) {
+                    e.preventDefault();
+                    triggerViolation("Right-Click disabled");
+                    return false;
+                }
+            });
+        }
+
+        function triggerViolation(reason) {
+            if (testPaused || testFinished) return;
+
+            violationCount++;
+            updateViolationBadge();
+
+            if (violationCount >= 3) {
+                applyViolationPenalty();
+            } else {
+                showWarningModal(reason);
+            }
+        }
+
+        function updateViolationBadge() {
+            const badge = document.getElementById('violationBadge');
+            badge.innerText = `${violationCount} / 3`;
+            if (violationCount === 1) {
+                badge.className = "bg-amber-100 text-amber-800 font-extrabold px-2.5 py-0.5 rounded border border-amber-300";
+            } else if (violationCount >= 2) {
+                badge.className = "bg-red-100 text-red-800 font-extrabold px-2.5 py-0.5 rounded border border-red-300 animate-pulse";
+            } else {
+                badge.className = "bg-slate-100 text-slate-800 font-extrabold px-2.5 py-0.5 rounded border border-slate-300";
+            }
+        }
+
+        function showWarningModal(reason) {
+            document.getElementById('warningModalReason').innerText = reason;
+            document.getElementById('modalViolationCount').innerText = violationCount;
+            document.getElementById('warningModal').classList.remove('hidden');
+        }
+
+        function dismissWarningAndResume() {
+            document.getElementById('warningModal').classList.add('hidden');
+            requestFullscreenManually();
+        }
+
+        function applyViolationPenalty() {
+            testPaused = true;
+            pauseTimeRemaining = 60;
+
+            const overlay = document.getElementById('iframeCoverOverlay');
+            const overlayContent = document.getElementById('coverOverlayContent');
+
+            overlay.classList.remove('hidden');
+            overlayContent.innerHTML = `
+                <div class="w-20 h-20 bg-red-600/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl border-2 border-red-500 animate-pulse">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
+                <h2 class="text-2xl font-black text-red-500 mb-2">EXAM PAUSED - 3 VIOLATIONS</h2>
+                <p class="text-slate-300 text-xs max-w-md mb-6">You accumulated 3 violations. The test is locked for 60 seconds.</p>
+                <div class="text-4xl font-mono font-black text-amber-400 bg-slate-800 px-6 py-3 rounded-xl border border-slate-700 shadow-inner mb-6">
+                    <span id="pauseTimerCount">01:00</span>
+                </div>
+            `;
+
+            clearInterval(pauseTimerInterval);
+            pauseTimerInterval = setInterval(() => {
+                pauseTimeRemaining--;
+                const pTimer = document.getElementById('pauseTimerCount');
+                if (pTimer) pTimer.innerText = `00:${String(pauseTimeRemaining).padStart(2, '0')}`;
+
+                if (pauseTimeRemaining <= 0) {
+                    clearInterval(pauseTimerInterval);
+                    resumeExamAfterPenalty();
+                }
+            }, 1000);
+        }
+
+        function resumeExamAfterPenalty() {
+            testPaused = false;
+            violationCount = 0;
+            updateViolationBadge();
+
+            document.getElementById('iframeCoverOverlay').classList.add('hidden');
+            requestFullscreenManually();
+        }
+
+        function finishExam(reason) {
+            testRunning = false;
+            testFinished = true;
+            clearInterval(timerInterval);
+
+            const overlay = document.getElementById('iframeCoverOverlay');
+            const overlayContent = document.getElementById('coverOverlayContent');
+
+            overlay.classList.remove('hidden');
+            overlayContent.innerHTML = `
+                <div class="w-20 h-20 bg-emerald-600/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl border-2 border-emerald-500">
+                    <i class="fa-solid fa-flag-checkered"></i>
+                </div>
+                <h2 class="text-2xl font-black text-white mb-2">TEST CONCLUDED</h2>
+                <p class="text-slate-300 text-xs max-w-md mb-6">${reason}</p>
+                <button onclick="location.reload()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition">
+                    Return Home
+                </button>
+            `;
+        }
+    </script>
+</body>
+</html>
